@@ -12,7 +12,8 @@ RUN pip install \
     matplotlib \
     tensorboard \
     scikit-image \
-    torchray
+    torchray \
+    captum
 
 # Install taskfile to run go task
 USER root

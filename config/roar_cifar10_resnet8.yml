@@ -33,6 +33,10 @@ extract_cams:
           method: src.attribution_methods.gradcam.compute_gradcam
           kwargs:
               saliency_layer: 'layer3.0.relu'
+        - name: guided_bp
+          method: src.attribution_methods.guided_backprop.compute_guided_backprop
+        - name: extremal_perturbation
+          method: src.attribution_methods.extremal_perturbation.compute_extremal_perturbation
 retrain_cls:
     model:
         arch: *BASE_ARCH
