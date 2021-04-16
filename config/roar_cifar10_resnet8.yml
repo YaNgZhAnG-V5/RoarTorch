@@ -35,8 +35,16 @@ extract_cams:
               saliency_layer: 'layer3.0.relu'
         - name: guided_bp
           method: src.attribution_methods.guided_backprop.compute_guided_backprop
+          kwargs:
+              saliency_layer: None
         - name: extremal_perturbation
           method: src.attribution_methods.extremal_perturbation.compute_extremal_perturbation
+          kwargs:
+              saliency_layer: None
+        - name: deep_sharp
+          method: src.attribution_methods.deep_sharp.compute_deep_sharp
+          kwargs:
+              baseline: "zero"
 retrain_cls:
     model:
         arch: *BASE_ARCH
