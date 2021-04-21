@@ -7,7 +7,7 @@ vars:
   DATA_DIR: /data
   PYTHON_FLAGS: "TORCH_HOME=./.pytorchcache/ PYTHONPATH=. "
   DOCKER_FLAGS: "--shm-size 8G --gpus all --network=host --ipc=host -it --rm "
-  CONFIG_PATH /config/roar_cifar10_vgg16.yml
+  CONFIG_PATH: /config/roar_cifar10_vgg16.yml
 
 tasks:
 
@@ -50,19 +50,19 @@ tasks:
     desc: Train a classification network on PASCAL dataset. To be run from inside docker. Optional var - CONFIG_PATH
     cmds:
     - |
-      PYTHONPATH=. TORCH_HOME=./.py-cache python src/roar/train_model.py --config CONFIG_PATH
+      PYTHONPATH=. TORCH_HOME=./.py-cache python src/roar/train_model.py --config {{.CONFIG_PATH}}
 
   extract-attribution-maps:
     desc: This task computes attribution maps and extracts them to specified directory.
     cmds:
       - |
-        PYTHONPATH=. TORCH_HOME=./.py-cache python src/roar/generate_attribution_dataset.py --config CONFIG_PATH
+        PYTHONPATH=. TORCH_HOME=./.py-cache python src/roar/generate_attribution_dataset.py --config {{.CONFIG_PATH}}
 
   evaluate-attribution-maps-roar:
     desc: This task computes roar metrics on extracted attribution maps.
     cmds:
       - |
-        PYTHONPATH=. TORCH_HOME=./.py-cache python src/roar/retrain_and_evaluate.py --config CONFIG_PATH
+        PYTHONPATH=. TORCH_HOME=./.py-cache python src/roar/retrain_and_evaluate.py --config {{.CONFIG_PATH}}
 
   roar:
     desc: Run full roar pipeline.
