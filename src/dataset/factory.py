@@ -11,10 +11,18 @@ class SupportedDataset(Enum):
         training_size=50000,
         labels_count=10
     )
+    cars_Enum = dict(
+        dataloader=CIFAR10,
+        image_size=(224, 224),  # Used for model FC layer.
+        channels=3,
+        training_size=8144,
+        labels_count=196
+    )
 
 
 MAP_DATASET_TO_ENUM = dict(
     CIFAR10=SupportedDataset.CIFAR10_Enum,
+    cars=SupportedDataset.cars_Enum,
 )
 
 
