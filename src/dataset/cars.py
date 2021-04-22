@@ -1,5 +1,6 @@
 from pprint import pprint
 
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -28,10 +29,11 @@ class Denormalize(object):
         return torch.clamp(tensor, 0.0, 1.0)
 
 # ToDo - Design BaseDataset class that others should implement for integrating their own dataset
-class CIFAR10:
+class CARS:
     # RGB Order
-    mean = (0.4914, 0.4822, 0.4465)
-    std = (0.2470, 0.2435, 0.2616)
+    # imagenet mean
+    mean = (0.485, 0.456, 0.406)
+    std = (0.229, 0.224, 0.225)
 
     def __init__(self,
                  dataset_args,
@@ -48,40 +50,35 @@ class CIFAR10:
 
         dataset_dir = dataset_args['dataset_dir']
         split_ratio = dataset_args.get('split_ratio', 7.0 / 8.0)
-        assert split_ratio < 1.0, 'CIFAR train set should be split into train and cross-validation set.'
+        assert split_ratio < 1.0, 'train set should be split into train and cross-validation set.'
 
         # Use augmentations for training models but not during generating dataset.
-        self.train_transform = CIFAR10.get_train_transform(
+        self.train_transform = self.get_train_transform(
             enable_augmentation=train_data_args.get('enable_augmentation', False)
         )
-        self.validation_transform = CIFAR10.get_validation_transform()
+        self.validation_transform = self.get_validation_transform()
         # Normalization transform does (x - mean) / std
         # To denormalize use mean* = (-mean/std) and std* = (1/std)
         self.demean = [-m / s for m, s in zip(self.mean, self.std)]
         self.destd = [1 / s for s in self.std]
         self.denormalization_transform = torchvision.transforms.Normalize(self.demean, self.destd, inplace=False)
 
-        self.trainset = torchvision.datasets.CIFAR10(root=dataset_dir, train=True, download=True,
-                                                     transform=self.train_transform)
-        self.validationset = torchvision.datasets.CIFAR10(root=dataset_dir, train=True, download=True,
-                                                          transform=self.validation_transform)
+        self.trainset = torchvision.datasets.ImageFolder(root=os.path.join(dataset_dir, 'train'), transform=self.train_transform)
+        self.validationset = torchvision.datasets.ImageFolder(root=os.path.join(dataset_dir, 'train'), transform=self.validation_transform)
 
         # Split train data into training and cross validation dataset using 9:1 split ration
         training_indices, validation_indices = self._uniform_train_val_split(self.trainset.targets, split_ratio)
         self.trainset = torch.utils.data.Subset(self.trainset, training_indices)
         self.validationset = torch.utils.data.Subset(self.validationset, validation_indices)
 
-        self.testset = torchvision.datasets.CIFAR10(root=dataset_dir,
-                                                    train=False,
-                                                    download=True,
-                                                    transform=self.validation_transform)
+        self.testset = torchvision.datasets.ImageFolder(root=os.path.join(dataset_dir,'test'), transform=self.validation_transform)
 
     @classmethod
     def get_train_transform(cls, enable_augmentation=False):
         """"""
         if enable_augmentation:
             normalize_transform = torchvision.transforms.Compose(
-                [torchvision.transforms.RandomCrop(32, padding=4),
+                [torchvision.transforms.RandomCrop(224, padding=4),
                  torchvision.transforms.RandomHorizontalFlip(),
                  torchvision.transforms.ToTensor(),
                  torchvision.transforms.Normalize(cls.mean, cls.std)]
@@ -161,7 +158,7 @@ class CIFAR10:
 
     @property
     def classes(self):
-        return ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+        return [i for i in range(196)]
 
     def _uniform_train_val_split(self, targets, split_ratio):
         if type(targets) == list:
@@ -187,9 +184,9 @@ class CIFAR10:
         return torch.tensor([1.0] * len(self.classes))
 
 
-def get_cifar_object():
+def get_cars_object():
     dataset_args = dict(
-      dataset_dir='./',
+      dataset_dir='./cars',
       split_ratio=0.9,
     )
 
@@ -203,12 +200,12 @@ def get_cifar_object():
         shuffle=False,
         validate_step_size=1,
     )
-    dataset = CIFAR10(dataset_args, train_data_args, val_data_args)
+    dataset = CARS(dataset_args, train_data_args, val_data_args)
     return dataset
 
 
 if __name__ == '__main__':
-    dataset = get_cifar_object()
+    dataset = get_cars_object()
     dataset.debug()
 
     print('Length of training set = ', len(dataset.trainset))
