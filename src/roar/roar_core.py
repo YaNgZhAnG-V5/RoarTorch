@@ -49,7 +49,7 @@ def validate_configuration(cfg: dict,
     """ Validates configuration for valid datasets and valid attribution method names """
 
     if validate_dataset:
-        valid_datasets = ['CIFAR10', 'Food101', 'Birdsnap', 'ImageNet']
+        valid_datasets = ['CIFAR10', 'Food101', 'Birdsnap', 'ImageNet', 'cars']
         assert cfg['data']['dataset'] in valid_datasets, \
             'dataset {} not supported, valid choices: {}'.format(cfg['dataset'], valid_datasets)
 

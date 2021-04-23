@@ -1,7 +1,7 @@
 from enum import Enum
 
 from src.dataset.CIFAR10 import CIFAR10
-
+from src.dataset.cars import CARS
 
 class SupportedDataset(Enum):
     CIFAR10_Enum = dict(
@@ -12,7 +12,7 @@ class SupportedDataset(Enum):
         labels_count=10
     )
     cars_Enum = dict(
-        dataloader=CIFAR10,
+        dataloader=CARS,
         image_size=(224, 224),  # Used for model FC layer.
         channels=3,
         training_size=8144,
