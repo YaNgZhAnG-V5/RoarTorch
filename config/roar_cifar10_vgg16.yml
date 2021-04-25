@@ -45,6 +45,10 @@ extract_cams:
           method: src.attribution_methods.deep_sharp.compute_deep_sharp
           kwargs:
               baseline: "zero"
+        - name: integrated_grad
+          method: src.attribution_methods.compute_integrated_gradients.compute_compute_integrated_gradients
+          kwargs:
+              baseline: None
 retrain_cls:
     model:
         arch: *BASE_ARCH
