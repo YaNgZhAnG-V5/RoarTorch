@@ -20,8 +20,8 @@ train_cls:
         weight_decay: 0.00001
     loss: &LOSS
         name: 'torch.nn.CrossEntropyLoss'
-    batch_size: &BATCH_SIZE 128
-    nb_epochs: &NB_EPOCHS 100
+    batch_size: &BATCH_SIZE 32
+    nb_epochs: &NB_EPOCHS 70
 extract_cams:
     model:
         arch: *BASE_ARCH

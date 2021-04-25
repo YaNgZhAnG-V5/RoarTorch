@@ -7,7 +7,7 @@ vars:
   DATA_DIR: /data
   PYTHON_FLAGS: "TORCH_HOME=./.pytorchcache/ PYTHONPATH=. "
   DOCKER_FLAGS: "--shm-size 8G --gpus all --network=host --ipc=host -it --rm "
-  CONFIG_PATH: /config/roar_cifar10_vgg16.yml
+  CONFIG_PATH: /config/roar_cars_vgg16.yml
 
 tasks:
 
