@@ -20,7 +20,7 @@ train_cls:
         weight_decay: 0.00001
     loss: &LOSS
         name: 'torch.nn.CrossEntropyLoss'
-    batch_size: &BATCH_SIZE 32
+    batch_size: &BATCH_SIZE 16
     nb_epochs: &NB_EPOCHS 70
 extract_cams:
     model:
@@ -29,7 +29,11 @@ extract_cams:
         constructor_args: ~
         transformer: ~
     attribution_methods: &ATTRIBUTION_METHODS
-        - name: gradcam
+#	- name: fosadaw
+#	  method: xx
+#	  kwargs:
+#	      saliency_layer: xxx
+        - name: input_masks
           method: src.attribution_methods.gradcam.compute_gradcam
           kwargs:
               saliency_layer: 'features.30'
@@ -41,14 +45,14 @@ extract_cams:
           method: src.attribution_methods.extremal_perturbation.compute_extremal_perturbation
           kwargs:
               saliency_layer: None
-        - name: deep_sharp
-          method: src.attribution_methods.deep_sharp.compute_deep_sharp
-          kwargs:
-              baseline: "zero"
-        - name: integrated_grad
-          method: src.attribution_methods.compute_integrated_gradients.compute_compute_integrated_gradients
-          kwargs:
-              baseline: None
+#        - name: deep_sharp
+#          method: src.attribution_methods.deep_sharp.compute_deep_sharp
+#          kwargs:
+#              baseline: "zero"
+#        - name: integrated_grad
+#          method: src.attribution_methods.integrated_gradients.compute_integrated_gradients
+#          kwargs:
+#              baseline: None
 retrain_cls:
     model:
         arch: *BASE_ARCH

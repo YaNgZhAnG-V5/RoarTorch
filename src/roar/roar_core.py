@@ -36,7 +36,8 @@ def remove(image, attribution, mean, percentile, keep=False, gray=False):
         for i in range(3):
             modified_image[i, mask] = mean[i]
     else:
-        mask = mask.reshape(image.shape)
+        print(mask.shape, image.shape)
+        mask = mask.reshape(image.shape[1:])
         for i in range(3):
             modified_image[i, mask[i]] = mean[i]
 

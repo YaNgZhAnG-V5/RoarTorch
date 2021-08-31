@@ -71,13 +71,13 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
 
         self.training_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_train_path,
-            transform=torchvision.transforms.ToTensor())
+            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
         self.validation_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_validation_path,
-            transform=torchvision.transforms.ToTensor())
+            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
         self.test_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_test_path,
-            transform=torchvision.transforms.ToTensor())
+            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
 
         self.mode = 'training'
 
@@ -96,11 +96,15 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             mean = [0, 0, 0]  # validation and training images already are normalized.
 
         # Below code is left intentionally for one to quickly check if input data to model is correct.
-        # import torchvision.transforms as T
-        # T.ToPILImage()(image).save('input.jpg')  # only for training, for validation/test, denormalize first.
+#        import torchvision.transforms as T
+#        T.ToPILImage()(image).save('input.jpg')  # only for training, for validation/test, denormalize first.
         image = np.array(image)
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
-        image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+#        if not self.mode == 'test':
+#       	    image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+       	image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+
+#        T.ToPILImage()(image.astype(np.uint8)).save('pert_input.jpg')
 
         if self.mode == 'training':
             # Do augmentation(randomscale/randomcrop) transform only after removal of pixels is done.
@@ -108,7 +112,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             image = self.train_normalize_transform(Image.fromarray((image * 255).astype(np.uint8)))
 
         # import torchvision.transforms as T
-        # T.ToPILImage()(self.denormalize_transform(image)).save('augmented.jpg')
+#        T.ToPILImage()(self.denormalize_transform(image)).save('augmented.jpg')
 
         return image, label
 
