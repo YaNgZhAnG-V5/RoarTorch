@@ -59,6 +59,12 @@ extract_cams:
               baseline: None
         - name: constant_mask
           method: src.attribution_methods.constant_mask.compute_constant_mask
+          kwargs:
+              baseline: None
+        - name: random_mask
+          method: src.attribution_methods.random_mask.compute_random_mask
+          kwargs:
+              baseline: None
 retrain_cls:
     model:
         arch: *BASE_ARCH
