@@ -21,7 +21,7 @@ train_cls:
     loss: &LOSS
         name: 'torch.nn.CrossEntropyLoss'
     batch_size: &BATCH_SIZE 256
-    nb_epochs: &NB_EPOCHS 50
+    nb_epochs: &NB_EPOCHS 35
 extract_cams:
     model:
         arch: *BASE_ARCH
@@ -46,9 +46,11 @@ extract_cams:
           kwargs:
               baseline: "zero"
         - name: integrated_grad
-          method: src.attribution_methods.compute_integrated_gradients.compute_compute_integrated_gradients
+          method: src.attribution_methods.integrated_gradients.compute_integrated_gradients
           kwargs:
               baseline: None
+        - name: constant_mask
+          method: src.attribution_methods.constant_mask.compute_constant_mask
 retrain_cls:
     model:
         arch: *BASE_ARCH
