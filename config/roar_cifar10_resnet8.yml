@@ -29,6 +29,14 @@ extract_cams:
         constructor_args: ~
         transformer: ~
     attribution_methods: &ATTRIBUTION_METHODS
+        - name: input_masks
+          method: input_masks (from external)
+          kwargs:
+              saliency_layer: 'layer3.0.relu'
+        - name: feat_masks
+          method: feat_masks (from external)
+          kwargs:
+              saliency_layer: 'layer3.0.relu'
         - name: gradcam
           method: src.attribution_methods.gradcam.compute_gradcam
           kwargs:
