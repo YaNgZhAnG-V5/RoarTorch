@@ -37,11 +37,13 @@ class CIFAR10:
                  dataset_args,
                  train_data_args,
                  val_data_args,
+                 device="cuda:0",
                  ):
         """
         use_random_flip not used.
         """
 
+        torch.cuda.set_device(device)
         self.cpu_count = get_cores_count()
         self.train_data_args = train_data_args
         self.val_data_args = val_data_args
