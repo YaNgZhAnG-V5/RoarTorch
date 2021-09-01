@@ -37,7 +37,7 @@ class CIFAR10:
                  dataset_args,
                  train_data_args,
                  val_data_args,
-                 device="cuda:0",
+                 device="cuda:1",
                  ):
         """
         use_random_flip not used.
