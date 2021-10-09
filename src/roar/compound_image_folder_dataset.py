@@ -163,3 +163,98 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         return len(self.test_images_dataset)
 
     # ToDo Add debug method for Compound Image Folder Dataset.
+
+
+class AttributionMapDataset(torch.utils.data.Dataset):
+    """
+    To load attribution maps as dataset.
+    """
+
+    def __init__(self,
+                 attribution_files_train_path,
+                 attribution_files_validation_path,
+                 attribution_files_test_path,
+                 ):
+        """
+
+        Args:
+            attribution_files_train_path:
+            attribution_files_validation_path:
+            attribution_files_test_path:
+        """
+
+        self.attribution_files_train_path = attribution_files_train_path
+        self.attribution_files_validation_path = attribution_files_validation_path
+        self.attribution_files_test_path = attribution_files_test_path
+
+        self.training_attribution_map_dataset = torchvision.datasets.ImageFolder(
+            root=attribution_files_train_path,
+            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+        self.validation_attribution_map_dataset = torchvision.datasets.ImageFolder(
+            root=attribution_files_validation_path,
+            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+        self.test_attribution_map_dataset = torchvision.datasets.ImageFolder(
+            root=attribution_files_test_path,
+            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+
+        self.mode = 'training'
+
+    def __getitem__(self, index):
+        if self.mode == 'training':
+            attribution_map, label = self.training_attribution_map_dataset[index]
+        elif self.mode == 'validation':
+            attribution_map, label = self.validation_attribution_map_dataset[index]
+        else:
+            attribution_map, label = self.test_attribution_map_dataset[index]
+
+        # Below code is left intentionally for one to quickly check if input data to model is correct.
+#        import torchvision.transforms as T
+#        T.ToPILImage()(attribution_map).save('input.jpg')
+
+        return attribution_map, label
+
+    def __len__(self):
+        if self.mode == 'training':
+            return self.train_dataset_size
+        elif self.mode == 'validation':
+            return self.val_dataset_size
+        else:
+            return self.test_dataset_size
+
+    def get_train_dataloader(self, data_args) -> DataLoader:
+        self.mode = 'training'
+        # Deepcopy ensures any changes to mode variable will not influence this dataloader
+        return torch.utils.data.DataLoader(deepcopy(self),
+                                           batch_size=data_args['batch_size'],
+                                           shuffle=data_args['shuffle'],
+                                           num_workers=get_cores_count())
+
+    def get_validation_dataloader(self, data_args) -> DataLoader:
+        self.mode = 'validation'
+        return torch.utils.data.DataLoader(deepcopy(self),
+                                           batch_size=data_args['batch_size'],
+                                           shuffle=data_args['shuffle'],
+                                           num_workers=get_cores_count())
+
+    def get_test_dataloader(self, data_args):
+        self.mode = 'test'
+        return torch.utils.data.DataLoader(deepcopy(self),
+                                           batch_size=data_args['batch_size'],
+                                           shuffle=data_args['shuffle'],
+                                           num_workers=get_cores_count())
+
+    @property
+    def classes(self):
+        return self.training_attribution_map_dataset.classes
+
+    @property
+    def train_dataset_size(self):
+        return len(self.training_attribution_map_dataset)
+
+    @property
+    def val_dataset_size(self):
+        return len(self.validation_attribution_map_dataset)
+
+    @property
+    def test_dataset_size(self):
+        return len(self.test_attribution_map_dataset)

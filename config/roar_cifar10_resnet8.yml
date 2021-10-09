@@ -81,6 +81,7 @@ retrain_cls:
         transformer: ~  # Any changes to apply to model last layer, say if using Resnet50 for training on 40 class dataset.
     attribution_methods: *ATTRIBUTION_METHODS  # Use same attribution methods as defined in extract_cams stage.
     metrics: 'roar' # ['roar', 'kar']
+    attribution_penalty: true
     percentiles:
         - 10
         - 30

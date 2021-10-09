@@ -65,6 +65,14 @@ def main():
                                                                                     roar=eval_metric == 'roar',
                                                                                     percentile=percentile)
 
+        # Create attribution map dataset using class label of attributed images
+        if cfg['retrain_cls']['attribution_penalty'] is True:
+            attribution_dataset = compound_image_folder_dataset.AttributionMapDataset(attribution_paths[0],
+                                                                                  attribution_paths[1],
+                                                                                  attribution_paths[2])
+        else:
+            attribution_dataset = None
+
         # Retrain Model on Compound Dataset and Evaluate
         train_data_args = dict(
             batch_size=cfg['train_cls']['batch_size'],
@@ -84,6 +92,7 @@ def main():
 
         arguments = dict(
             dataset=compound_dataset,
+            attribution_dataset=attribution_dataset,
             model_name_args=(attribution_method, percentile),
             train_data_args=train_data_args,
             val_data_args=val_data_args,
@@ -120,6 +129,9 @@ def train_and_evaluate_model(arguments):
     """ Load Compound Dataset """
     dataset = arguments['dataset']
 
+    """ Load attribution map dataset"""
+    attribution_map_dataset = arguments["attribution_map_dataset"]
+
     """ Load Model with weights(if available) """
     model: torch.nn.Module = models_utils.get_model(
         arguments.get('model_args'), device, dict(labels_count=len(dataset.classes))
@@ -144,25 +156,53 @@ def train_and_evaluate_model(arguments):
         start = time.time()
         total, correct = 0, 0
         train_dataloader = dataset.get_train_dataloader(arguments['train_data_args'])
-        for i, data in enumerate(tqdm(train_dataloader)):
-            # get the inputs
-            inputs, labels = data
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+        if attribution_map_dataset is not None:
+            for i, data in enumerate(tqdm(train_dataloader)):
+                # get the inputs
+                inputs, labels = data
+                inputs = inputs.to(device)
+                labels = labels.to(device)
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
+                # zero the parameter gradients
+                optimizer.zero_grad()
 
-            # Forward Pass
-            outputs = model(inputs)
+                # Forward Pass
+                outputs = model(inputs)
 
-            total_loss = criterion(outputs, labels)
-            total_loss.backward()
-            optimizer.step()
+                total_loss = criterion(outputs, labels)
+                total_loss.backward()
+                optimizer.step()
 
-            total += labels.size(0)
-            _, predicted = torch.max(outputs.data, 1)
-            correct += (predicted == labels).sum().item()
+                total += labels.size(0)
+                _, predicted = torch.max(outputs.data, 1)
+                correct += (predicted == labels).sum().item()
+        else:
+            train_attribution_map_dataloader = attribution_map_dataset.get_train_dataloader(arguments['train_data_args'])
+            for i, (data, attribution_map_data) in enumerate(tqdm(zip(train_dataloader, train_attribution_map_dataloader), total=len(train_dataloader))):
+                # get the inputs
+                inputs, labels = data
+                attribution_maps, attr_labels = attribution_map_data
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+                attribution_maps = attribution_maps.to(device)
+                attr_labels = attr_labels.to(device)
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # Forward Pass
+                outputs = model(inputs)
+                attribution_outputs = model(attribution_maps)
+
+                input_loss = criterion(outputs, labels)
+                attribution_loss = criterion(attribution_outputs, attr_labels)
+                total_loss = input_loss - attribution_loss
+                total_loss.backward()
+                optimizer.step()
+
+                total += labels.size(0)
+                _, predicted = torch.max(outputs.data, 1)
+                correct += (predicted == labels).sum().item()
 
         train_accuracy = 100 * correct / total
         print(f"Epoch = {epoch}, Train_accuracy = {train_accuracy}, Time taken = {time.time() - start} seconds.")
