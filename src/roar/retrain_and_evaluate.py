@@ -159,6 +159,7 @@ def train_and_evaluate_model(arguments):
 
         # Use attribution maps as penalty (prevent the model from learn new features)
         if attribution_map_dataset is not None:
+            attribution_correct = 0
             print("Attribution maps included during training")
             train_attribution_map_dataloader = attribution_map_dataset.get_train_dataloader(arguments['train_data_args'])
             for i, (data, attribution_map_data) in enumerate(tqdm(zip(train_dataloader, train_attribution_map_dataloader), total=len(train_dataloader))):
