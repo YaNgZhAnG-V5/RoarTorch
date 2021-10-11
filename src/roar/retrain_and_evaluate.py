@@ -159,7 +159,7 @@ def train_and_evaluate_model(arguments):
 
         # Use attribution maps as penalty (prevent the model from learn new features)
         if attribution_map_dataset is not None:
-            print(f"Attribution maps included during training")
+            print("Attribution maps included during training")
             train_attribution_map_dataloader = attribution_map_dataset.get_train_dataloader(arguments['train_data_args'])
             for i, (data, attribution_map_data) in enumerate(tqdm(zip(train_dataloader, train_attribution_map_dataloader), total=len(train_dataloader))):
                 # get the inputs
@@ -186,10 +186,15 @@ def train_and_evaluate_model(arguments):
                 total += labels.size(0)
                 _, predicted = torch.max(outputs.data, 1)
                 correct += (predicted == labels).sum().item()
+                _, attribution_predicted = torch.max(attribution_outputs.data, 1)
+                attribution_correct += (attribution_predicted == attr_labels).sum().item()
+
+                # print loss information (for debug purpose)
+                print(f"Image loss:{input_loss}, attr. loss:{attribution_loss}, total loss:{total_loss}")
 
         # standard learning (perturbed images only)
         else:
-            print(f"Attribution maps NOT included during training")
+            print("Attribution maps NOT included during training")
             for i, data in enumerate(tqdm(train_dataloader)):
                 # get the inputs
                 inputs, labels = data
@@ -210,9 +215,11 @@ def train_and_evaluate_model(arguments):
                 _, predicted = torch.max(outputs.data, 1)
                 correct += (predicted == labels).sum().item()
 
-
         train_accuracy = 100 * correct / total
         print(f"Epoch = {epoch}, Train_accuracy = {train_accuracy}, Time taken = {time.time() - start} seconds.")
+        if attribution_map_dataset is not None:
+            train_attribution_accuracy = 100 * attribution_correct / total
+            print(f"Train_attribution_accuracy = {train_attribution_accuracy}")
 
         """ Cross-Validate the model """
         validation_dataloader = dataset.get_validation_dataloader(arguments['val_data_args'])
