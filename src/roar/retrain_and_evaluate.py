@@ -130,7 +130,7 @@ def train_and_evaluate_model(arguments):
     dataset = arguments['dataset']
 
     """ Load attribution map dataset"""
-    attribution_map_dataset = arguments["attribution_map_dataset"]
+    attribution_map_dataset = arguments["attribution_dataset"]
 
     """ Load Model with weights(if available) """
     model: torch.nn.Module = models_utils.get_model(
