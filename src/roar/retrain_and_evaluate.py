@@ -156,27 +156,10 @@ def train_and_evaluate_model(arguments):
         start = time.time()
         total, correct = 0, 0
         train_dataloader = dataset.get_train_dataloader(arguments['train_data_args'])
+
+        # Use attribution maps as penalty (prevent the model from learn new features)
         if attribution_map_dataset is not None:
-            for i, data in enumerate(tqdm(train_dataloader)):
-                # get the inputs
-                inputs, labels = data
-                inputs = inputs.to(device)
-                labels = labels.to(device)
-
-                # zero the parameter gradients
-                optimizer.zero_grad()
-
-                # Forward Pass
-                outputs = model(inputs)
-
-                total_loss = criterion(outputs, labels)
-                total_loss.backward()
-                optimizer.step()
-
-                total += labels.size(0)
-                _, predicted = torch.max(outputs.data, 1)
-                correct += (predicted == labels).sum().item()
-        else:
+            print(f"Attribution maps included during training")
             train_attribution_map_dataloader = attribution_map_dataset.get_train_dataloader(arguments['train_data_args'])
             for i, (data, attribution_map_data) in enumerate(tqdm(zip(train_dataloader, train_attribution_map_dataloader), total=len(train_dataloader))):
                 # get the inputs
@@ -203,6 +186,30 @@ def train_and_evaluate_model(arguments):
                 total += labels.size(0)
                 _, predicted = torch.max(outputs.data, 1)
                 correct += (predicted == labels).sum().item()
+
+        # standard learning (perturbed images only)
+        else:
+            print(f"Attribution maps NOT included during training")
+            for i, data in enumerate(tqdm(train_dataloader)):
+                # get the inputs
+                inputs, labels = data
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # Forward Pass
+                outputs = model(inputs)
+
+                total_loss = criterion(outputs, labels)
+                total_loss.backward()
+                optimizer.step()
+
+                total += labels.size(0)
+                _, predicted = torch.max(outputs.data, 1)
+                correct += (predicted == labels).sum().item()
+
 
         train_accuracy = 100 * correct / total
         print(f"Epoch = {epoch}, Train_accuracy = {train_accuracy}, Time taken = {time.time() - start} seconds.")
