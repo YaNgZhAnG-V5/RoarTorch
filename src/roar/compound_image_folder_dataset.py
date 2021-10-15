@@ -24,7 +24,8 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
                  attribution_files_validation_path,
                  attribution_files_test_path,
                  percentile=0.1,
-                 roar=True):
+                 roar=True,
+                 non_perturbed_testset=True):
         """
 
         Args:
@@ -37,6 +38,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             attribution_files_test_path:
             percentile: The % of pixels to remove from input image.
             roar: Set to True for ROAR metric, False for KAR metric.
+            non_perturbed_testset: Set to True if we don't want to perturb testset images
         """
 
         if dataset_name not in dataset_factory.MAP_DATASET_TO_ENUM:
@@ -48,6 +50,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         self.attribution_files_test_path = attribution_files_test_path
         self.percentile = percentile
         self.roar = roar
+        self.non_perturbed_testset = non_perturbed_testset
 
         self.dataset_class = dataset_factory.get_dataset_class(dataset_name=dataset_name)
         self.mean = self.dataset_class.mean
@@ -100,9 +103,9 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
 #        T.ToPILImage()(image).save('input.jpg')  # only for training, for validation/test, denormalize first.
         image = np.array(image)
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
-#        if not self.mode == 'test':
-#       	    image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
-       	image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+        if not self.mode == 'test':
+            image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+        # image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
 
 #        T.ToPILImage()(image.astype(np.uint8)).save('pert_input.jpg')
 
@@ -207,9 +210,13 @@ class AttributionMapDataset(torch.utils.data.Dataset):
         else:
             attribution_map, label = self.test_attribution_map_dataset[index]
 
+        # perturb the attribution map
+        print(type(attribution_map))
+        print(attribution_map.shape)
+
         # Below code is left intentionally for one to quickly check if input data to model is correct.
-#        import torchvision.transforms as T
-#        T.ToPILImage()(attribution_map).save('input.jpg')
+        import torchvision.transforms as T
+        T.ToPILImage()(attribution_map).save('perturbed_attribution_map.jpg')
 
         return attribution_map, label
 
