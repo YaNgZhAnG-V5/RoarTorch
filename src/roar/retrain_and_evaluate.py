@@ -130,7 +130,7 @@ def train_and_evaluate_model(arguments):
     utils.set_random_seed(random_seed=arguments['random_seed'])
 
     """ Set device - cpu or gpu """
-    device = torch.device(cuda_device if torch.cuda.is_available() else "cpu")
+    device = torch.device(arguments['cuda_device'] if torch.cuda.is_available() else "cpu")
     print(f'Using device - {device}')
 
     """ Load Compound Dataset """

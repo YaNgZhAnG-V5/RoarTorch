@@ -91,7 +91,7 @@ def dump_saliency_data():
     utils.set_random_seed(random_seed=random.randint(0, 1000))
 
     """ Set device - cpu or gpu """
-    device = torch.device(cuda_device if torch.cuda.is_available() else "cpu")
+    device = torch.device(arguments['cuda_device'] if torch.cuda.is_available() else "cpu")
     logger.info(f'Using device - {device}')
 
     """ Load parameters for the Dataset """

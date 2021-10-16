@@ -92,7 +92,7 @@ def train_and_evaluate_model(arguments):
     tb_writer = initialize_tensorboard(outdir)
 
     """ Set device - cpu or gpu """
-    device = torch.device(cuda_device if torch.cuda.is_available() else "cpu")
+    device = torch.device(arguments['cuda_device'] if torch.cuda.is_available() else "cpu")
     logger.info(f'Using device - {device}')
 
     """ Load parameters for the Dataset """
