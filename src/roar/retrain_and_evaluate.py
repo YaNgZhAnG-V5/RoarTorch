@@ -95,6 +95,7 @@ def main():
                    'pretrained_weights'] is None, 'Retraining should be done without pretrained weights'
 
         arguments = dict(
+            cuda_device=cfg['cuda_device'],
             dataset=compound_dataset,
             attribution_dataset=attribution_dataset,
             non_perturbed_testset=non_perturbed_testset,
@@ -129,7 +130,7 @@ def train_and_evaluate_model(arguments):
     utils.set_random_seed(random_seed=arguments['random_seed'])
 
     """ Set device - cpu or gpu """
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device(cuda_device if torch.cuda.is_available() else "cpu")
     print(f'Using device - {device}')
 
     """ Load Compound Dataset """

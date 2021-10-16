@@ -1,5 +1,6 @@
 desc: 'Config for training Resnet8 classification network on CIFAR10 dataset'
 outdir: &outdir 'runs/cifar10_resnet8'
+cuda_device: 'cuda:1'
 data:
     dataset: CIFAR10
     split_ratio: 0.875  # 7/8

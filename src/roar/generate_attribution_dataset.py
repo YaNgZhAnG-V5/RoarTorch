@@ -73,6 +73,7 @@ def dump_saliency_data():
     assert not val_data_args['shuffle']
 
     arguments = dict(
+        cuda_device=cfg['cuda_device'],
         dataset_args=dataset_args,
         train_data_args=train_data_args,
         val_data_args=val_data_args,
@@ -90,7 +91,7 @@ def dump_saliency_data():
     utils.set_random_seed(random_seed=random.randint(0, 1000))
 
     """ Set device - cpu or gpu """
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device(cuda_device if torch.cuda.is_available() else "cpu")
     logger.info(f'Using device - {device}')
 
     """ Load parameters for the Dataset """
