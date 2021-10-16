@@ -3,6 +3,7 @@ from copy import deepcopy
 import numpy as np
 import torch
 import torchvision
+import torchvision.transforms as T
 from PIL import Image
 from torch.utils.data import DataLoader
 
@@ -177,6 +178,7 @@ class AttributionMapDataset(torch.utils.data.Dataset):
                  attribution_files_train_path,
                  attribution_files_validation_path,
                  attribution_files_test_path,
+                 percentile,
                  ):
         """
 
@@ -189,6 +191,7 @@ class AttributionMapDataset(torch.utils.data.Dataset):
         self.attribution_files_train_path = attribution_files_train_path
         self.attribution_files_validation_path = attribution_files_validation_path
         self.attribution_files_test_path = attribution_files_test_path
+        self.percentile = percentile
 
         self.training_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_train_path,
@@ -211,12 +214,16 @@ class AttributionMapDataset(torch.utils.data.Dataset):
             attribution_map, label = self.test_attribution_map_dataset[index]
 
         # perturb the attribution map
-        print(type(attribution_map))
-        print(attribution_map.shape)
+        # TODO add KAR version
+        gray_img_tensor, _ = torch.max(attribution_map, axis=0, keepdims=True)
+        gray_img_tensor = gray_img_tensor.squeeze()
+        num_pixels = torch.numel(gray_img_tensor)
+        num, _ = torch.topk(gray_img_tensor.flatten(), int(num_pixels * self.percentile / 100))
+        attribution_map[:, gray_img_tensor < num[-1]] = 0
 
         # Below code is left intentionally for one to quickly check if input data to model is correct.
-        import torchvision.transforms as T
-        T.ToPILImage()(attribution_map).save('perturbed_attribution_map.jpg')
+        # import torchvision.transforms as T
+        # T.ToPILImage()(attribution_map).save('perturbed_attribution_map.jpg')
 
         return attribution_map, label
 
