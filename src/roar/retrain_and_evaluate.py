@@ -97,6 +97,8 @@ def main():
         arguments = dict(
             dataset=compound_dataset,
             attribution_dataset=attribution_dataset,
+            non_perturbed_testset=non_perturbed_testset,
+            attribution_beta=cfg['retrain_cls']['attribution_beta'],
             model_name_args=(attribution_method, percentile),
             train_data_args=train_data_args,
             val_data_args=val_data_args,
@@ -135,6 +137,9 @@ def train_and_evaluate_model(arguments):
 
     """ Load attribution map dataset"""
     attribution_map_dataset = arguments["attribution_dataset"]
+
+    """ Set attribution beta for loss function """
+    attribution_beta = arguments["attribution_beta"]
 
     """ Load Model with weights(if available) """
     model: torch.nn.Module = models_utils.get_model(
@@ -184,7 +189,7 @@ def train_and_evaluate_model(arguments):
 
                 input_loss = criterion(outputs, labels)
                 attribution_loss = criterion(attribution_outputs, attr_labels)
-                total_loss = input_loss - attribution_loss
+                total_loss = input_loss - attribution_beta * attribution_loss
                 total_loss.backward()
                 optimizer.step()
 
@@ -194,8 +199,8 @@ def train_and_evaluate_model(arguments):
                 _, attribution_predicted = torch.max(attribution_outputs.data, 1)
                 attribution_correct += (attribution_predicted == attr_labels).sum().item()
 
-                # print loss information (for debug purpose)
-                print(f"Image loss:{input_loss}, attr. loss:{attribution_loss}, total loss:{total_loss}")
+            # print loss information (for debug purpose)
+            print(f"Image loss:{input_loss}, attr. loss:{attribution_loss}, total loss:{total_loss}")
 
         # standard learning (perturbed images only)
         else:

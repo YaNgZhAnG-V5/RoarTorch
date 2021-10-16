@@ -104,9 +104,11 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
 #        T.ToPILImage()(image).save('input.jpg')  # only for training, for validation/test, denormalize first.
         image = np.array(image)
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
-        if not self.mode == 'test':
+        if self.non_perturbed_testset:
+            if not self.mode == 'test':
+                image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+        else:
             image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
-        # image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
 
 #        T.ToPILImage()(image.astype(np.uint8)).save('pert_input.jpg')
 
