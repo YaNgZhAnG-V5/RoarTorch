@@ -71,8 +71,9 @@ def main():
         # Create attribution map dataset using class label of attributed images
         if cfg['retrain_cls']['attribution_penalty'] is True:
             attribution_dataset = compound_image_folder_dataset.AttributionMapDataset(attribution_paths[0],
-                                                                                  attribution_paths[1],
-                                                                                  attribution_paths[2])
+                                                                                      attribution_paths[1],
+                                                                                      attribution_paths[2],
+                                                                                      percentile=percentile)
         else:
             attribution_dataset = None
 

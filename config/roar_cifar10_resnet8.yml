@@ -82,6 +82,7 @@ retrain_cls:
     attribution_methods: *ATTRIBUTION_METHODS  # Use same attribution methods as defined in extract_cams stage.
     metrics: 'roar' # ['roar', 'kar']
     attribution_penalty: true
+    non_perturbed_testset: true
     percentiles:
         - 10
         - 30
