@@ -189,8 +189,9 @@ def train_and_evaluate_model(arguments):
                 attribution_outputs = model(attribution_maps)
 
                 input_loss = criterion(outputs, labels)
-                attribution_loss = criterion(attribution_outputs, attr_labels)
-                total_loss = input_loss - attribution_beta * attribution_loss
+                attribution_loss = torch.abs(torch.log(torch.tensor([attribution_outputs.shape[1]], dtype=torch.float64, device=device)) - criterion(attribution_outputs, attr_labels))
+                # print(attribution_outputs.shape[0], attribution_outputs.shape[1])
+                total_loss = input_loss + attribution_beta * attribution_loss
                 total_loss.backward()
                 optimizer.step()
 
