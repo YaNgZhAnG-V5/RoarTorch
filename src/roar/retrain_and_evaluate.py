@@ -174,11 +174,13 @@ def train_and_evaluate_model(arguments):
             train_image_attribution_dataloader = image_attribution_dataset.get_train_dataloader(arguments['train_data_args'])
             for i, data in enumerate(tqdm(train_image_attribution_dataloader, total=len(train_image_attribution_dataloader))):
                 # get the inputs
-                compound_inputs, labels = data
-                inputs, attribution_maps = compound_inputs
+                input_data, attribution_data = data
+                inputs, labels = input_data
                 inputs = inputs.to(device)
                 labels = labels.to(device)
+                attribution_maps, attr_labels = attribution_data
                 attribution_maps = attribution_maps.to(device)
+                attr_labels = attr_labels.to(device)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -188,7 +190,7 @@ def train_and_evaluate_model(arguments):
                 attribution_outputs = model(attribution_maps)
 
                 input_loss = criterion(outputs, labels)
-                attribution_loss = torch.abs(torch.log(torch.tensor([attribution_outputs.shape[1]], dtype=torch.float64, device=device)) - criterion(attribution_outputs, labels))
+                attribution_loss = torch.abs(torch.log(torch.tensor([attribution_outputs.shape[1]], dtype=torch.float64, device=device)) - criterion(attribution_outputs, attr_labels))
                 total_loss = input_loss + attribution_beta * attribution_loss
                 total_loss.backward()
                 optimizer.step()
@@ -197,7 +199,7 @@ def train_and_evaluate_model(arguments):
                 _, predicted = torch.max(outputs.data, 1)
                 correct += (predicted == labels).sum().item()
                 _, attribution_predicted = torch.max(attribution_outputs.data, 1)
-                attribution_correct += (attribution_predicted == labels).sum().item()
+                attribution_correct += (attribution_predicted == attr_labels).sum().item()
 
             # print loss information (for debug purpose)
             print(f"Image loss:{input_loss}, attr. loss:{attribution_loss}, total loss:{total_loss}")
