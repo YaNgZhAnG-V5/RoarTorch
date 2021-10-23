@@ -58,22 +58,26 @@ extract_cams:
 #          method: src.attribution_methods.integrated_gradients.compute_integrated_gradients
 #          kwargs:
 #              baseline: None
-        - name: constant_mask
-          method: src.attribution_methods.constant_mask.compute_constant_mask
+#        - name: constant_mask
+#          method: src.attribution_methods.constant_mask.compute_constant_mask
+#          kwargs:
+#              baseline: None
+#        - name: constant_mask_circle
+#          method: src.attribution_methods.constant_mask_circle.compute_constant_mask_circle
+#          kwargs:
+#            baseline: None
+#        - name: constant_class_mask
+#          method: src.attribution_methods.constant_class_mask.compute_constant_class_mask
+#          kwargs:
+#            baseline: None
+        - name: constant_class_mask_margin
+          method: src.attribution_methods.constant_class_mask_margin.compute_constant_class_mask_margin
           kwargs:
-              baseline: None
-        - name: constant_mask_circle
-          method: src.attribution_methods.constant_mask_circle.compute_constant_mask_circle
-          kwargs:
-            baseline: None
-        - name: constant_class_mask
-          method: src.attribution_methods.constant_class_mask.compute_constant_class_mask
-          kwargs:
-            baseline: None
-        - name: random_mask
-          method: src.attribution_methods.random_mask.compute_random_mask
-          kwargs:
-              baseline: None
+              baseline: 0.1
+#        - name: random_mask
+#          method: src.attribution_methods.random_mask.compute_random_mask
+#          kwargs:
+#              baseline: None
 retrain_cls:
     model:
         arch: *BASE_ARCH
