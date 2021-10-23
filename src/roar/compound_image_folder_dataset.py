@@ -75,13 +75,16 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
 
         self.training_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_train_path,
-            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+            transform=torchvision.transforms.Compose(
+                [torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
         self.validation_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_validation_path,
-            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+            transform=torchvision.transforms.Compose(
+                [torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
         self.test_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_test_path,
-            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+            transform=torchvision.transforms.Compose(
+                [torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
 
         self.mode = 'training'
 
@@ -100,8 +103,8 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             mean = [0, 0, 0]  # validation and training images already are normalized.
 
         # Below code is left intentionally for one to quickly check if input data to model is correct.
-#        import torchvision.transforms as T
-#        T.ToPILImage()(image).save('input.jpg')  # only for training, for validation/test, denormalize first.
+        #        import torchvision.transforms as T
+        #        T.ToPILImage()(image).save('input.jpg')  # only for training, for validation/test, denormalize first.
         image = np.array(image)
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
         if self.non_perturbed_testset:
@@ -110,7 +113,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         else:
             image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
 
-#        T.ToPILImage()(image.astype(np.uint8)).save('pert_input.jpg')
+        #        T.ToPILImage()(image.astype(np.uint8)).save('pert_input.jpg')
 
         if self.mode == 'training':
             # Do augmentation(randomscale/randomcrop) transform only after removal of pixels is done.
@@ -118,7 +121,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             image = self.train_normalize_transform(Image.fromarray((image * 255).astype(np.uint8)))
 
         # import torchvision.transforms as T
-#        T.ToPILImage()(self.denormalize_transform(image)).save('augmented.jpg')
+        #        T.ToPILImage()(self.denormalize_transform(image)).save('augmented.jpg')
 
         return image, label
 
@@ -197,13 +200,16 @@ class AttributionMapDataset(torch.utils.data.Dataset):
 
         self.training_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_train_path,
-            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+            transform=torchvision.transforms.Compose(
+                [torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
         self.validation_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_validation_path,
-            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+            transform=torchvision.transforms.Compose(
+                [torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
         self.test_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_test_path,
-            transform=torchvision.transforms.Compose([torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
+            transform=torchvision.transforms.Compose(
+                [torchvision.transforms.Grayscale(num_output_channels=3), torchvision.transforms.ToTensor()]))
 
         self.mode = 'training'
 
@@ -275,40 +281,41 @@ class AttributionMapDataset(torch.utils.data.Dataset):
     def test_dataset_size(self):
         return len(self.test_attribution_map_dataset)
 
-    class ImageAndAttributionDataset(torch.utils.data.Dataset):
-        def __init__(self, image_dataset, attribution_dataset):
-            self.image_dataset = image_dataset
-            self.attribution_dataset = attribution_dataset
 
-        def __getitem__(self, index):
-            image = self.image_dataset[index]
-            attribution = self.attribution_dataset[index]
-            return image, attribution
+class ImageAndAttributionDataset(torch.utils.data.Dataset):
+    def __init__(self, image_dataset, attribution_dataset):
+        self.image_dataset = image_dataset
+        self.attribution_dataset = attribution_dataset
 
-        def __len__(self):
-            return len(self.image_dataset)
+    def __getitem__(self, index):
+        image = self.image_dataset[index]
+        attribution = self.attribution_dataset[index]
+        return image, attribution
 
-        def get_train_dataloader(self, data_args) -> DataLoader:
-            self.image_dataset.mode = 'training'
-            self.attribution_dataset.mode = 'training'
-            # Deepcopy ensures any changes to mode variable will not influence this dataloader
-            return torch.utils.data.DataLoader(deepcopy(self),
-                                               batch_size=data_args['batch_size'],
-                                               shuffle=data_args['shuffle'],
-                                               num_workers=get_cores_count())
+    def __len__(self):
+        return len(self.image_dataset)
 
-        def get_validation_dataloader(self, data_args) -> DataLoader:
-            self.image_dataset.mode = 'validation'
-            self.attribution_dataset.mode = 'validation'
-            return torch.utils.data.DataLoader(deepcopy(self),
-                                               batch_size=data_args['batch_size'],
-                                               shuffle=data_args['shuffle'],
-                                               num_workers=get_cores_count())
+    def get_train_dataloader(self, data_args) -> DataLoader:
+        self.image_dataset.mode = 'training'
+        self.attribution_dataset.mode = 'training'
+        # Deepcopy ensures any changes to mode variable will not influence this dataloader
+        return torch.utils.data.DataLoader(deepcopy(self),
+                                           batch_size=data_args['batch_size'],
+                                           shuffle=data_args['shuffle'],
+                                           num_workers=get_cores_count())
 
-        def get_test_dataloader(self, data_args):
-            self.image_dataset.mode = 'test'
-            self.attribution_dataset.mode = 'test'
-            return torch.utils.data.DataLoader(deepcopy(self),
-                                               batch_size=data_args['batch_size'],
-                                               shuffle=data_args['shuffle'],
-                                               num_workers=get_cores_count())
+    def get_validation_dataloader(self, data_args) -> DataLoader:
+        self.image_dataset.mode = 'validation'
+        self.attribution_dataset.mode = 'validation'
+        return torch.utils.data.DataLoader(deepcopy(self),
+                                           batch_size=data_args['batch_size'],
+                                           shuffle=data_args['shuffle'],
+                                           num_workers=get_cores_count())
+
+    def get_test_dataloader(self, data_args):
+        self.image_dataset.mode = 'test'
+        self.attribution_dataset.mode = 'test'
+        return torch.utils.data.DataLoader(deepcopy(self),
+                                           batch_size=data_args['batch_size'],
+                                           shuffle=data_args['shuffle'],
+                                           num_workers=get_cores_count())
