@@ -275,7 +275,7 @@ class AttributionMapDataset(torch.utils.data.Dataset):
     def test_dataset_size(self):
         return len(self.test_attribution_map_dataset)
 
-    class ImageAndAttributionDataset(Dataset):
+    class ImageAndAttributionDataset(torch.utils.data.Dataset):
         def __init__(self, image_dataset, attribution_dataset):
             self.image_dataset = image_dataset
             self.attribution_dataset = attribution_dataset
