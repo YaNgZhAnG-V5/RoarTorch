@@ -20,7 +20,7 @@ def compute_constant_class_mask_margin(model, preprocessed_image, label, baselin
     image_length = list(grad.shape)[-1]
 
     # construct circle based on label
-    class_per_edge = torch.ceil([num_of_classes/4.])
+    class_per_edge = torch.ceil(torch.tensor([num_of_classes/4.], dtype=torch.float64))
     margin = int(image_length * baseline)
     stride = int((image_length - 2 * margin)/class_per_edge)
     edge_index = label_idx//class_per_edge
