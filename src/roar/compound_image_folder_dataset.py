@@ -274,3 +274,41 @@ class AttributionMapDataset(torch.utils.data.Dataset):
     @property
     def test_dataset_size(self):
         return len(self.test_attribution_map_dataset)
+
+    class ImageAndAttributionDataset(Dataset):
+        def __init__(self, image_dataset, attribution_dataset):
+            self.image_dataset = image_dataset
+            self.attribution_dataset = attribution_dataset
+
+        def __getitem__(self, index):
+            image = self.image_dataset[index]
+            attribution = self.attribution_dataset[index]
+            return image, attribution
+
+        def __len__(self):
+            return len(self.image_dataset)
+
+        def get_train_dataloader(self, data_args) -> DataLoader:
+            self.image_dataset.mode = 'training'
+            self.attribution_dataset.mode = 'training'
+            # Deepcopy ensures any changes to mode variable will not influence this dataloader
+            return torch.utils.data.DataLoader(deepcopy(self),
+                                               batch_size=data_args['batch_size'],
+                                               shuffle=data_args['shuffle'],
+                                               num_workers=get_cores_count())
+
+        def get_validation_dataloader(self, data_args) -> DataLoader:
+            self.image_dataset.mode = 'validation'
+            self.attribution_dataset.mode = 'validation'
+            return torch.utils.data.DataLoader(deepcopy(self),
+                                               batch_size=data_args['batch_size'],
+                                               shuffle=data_args['shuffle'],
+                                               num_workers=get_cores_count())
+
+        def get_test_dataloader(self, data_args):
+            self.image_dataset.mode = 'test'
+            self.attribution_dataset.mode = 'test'
+            return torch.utils.data.DataLoader(deepcopy(self),
+                                               batch_size=data_args['batch_size'],
+                                               shuffle=data_args['shuffle'],
+                                               num_workers=get_cores_count())

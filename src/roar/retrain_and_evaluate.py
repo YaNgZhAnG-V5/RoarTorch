@@ -165,21 +165,20 @@ def train_and_evaluate_model(arguments):
         model.train()
         start = time.time()
         total, correct = 0, 0
-        train_dataloader = dataset.get_train_dataloader(arguments['train_data_args'])
 
         # Use attribution maps as penalty (prevent the model from learn new features)
         if attribution_map_dataset is not None:
             attribution_correct = 0
             print("Attribution maps included during training")
-            train_attribution_map_dataloader = attribution_map_dataset.get_train_dataloader(arguments['train_data_args'])
-            for i, (data, attribution_map_data) in enumerate(tqdm(zip(train_dataloader, train_attribution_map_dataloader), total=len(train_dataloader))):
+            image_attribution_dataset = compound_image_folder_dataset.ImageAndAttributionDataset(dataset, attribution_map_dataset)
+            train_image_attribution_dataloader = image_attribution_dataset.get_train_dataloader(arguments['train_data_args'])
+            for i, data in enumerate(tqdm(train_image_attribution_dataloader, total=len(train_image_attribution_dataloader))):
                 # get the inputs
-                inputs, labels = data
-                attribution_maps, attr_labels = attribution_map_data
+                compound_inputs, labels = data
+                inputs, attribution_maps = compound_inputs
                 inputs = inputs.to(device)
                 labels = labels.to(device)
                 attribution_maps = attribution_maps.to(device)
-                attr_labels = attr_labels.to(device)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -189,8 +188,7 @@ def train_and_evaluate_model(arguments):
                 attribution_outputs = model(attribution_maps)
 
                 input_loss = criterion(outputs, labels)
-                attribution_loss = torch.abs(torch.log(torch.tensor([attribution_outputs.shape[1]], dtype=torch.float64, device=device)) - criterion(attribution_outputs, attr_labels))
-                # print(attribution_outputs.shape[0], attribution_outputs.shape[1])
+                attribution_loss = torch.abs(torch.log(torch.tensor([attribution_outputs.shape[1]], dtype=torch.float64, device=device)) - criterion(attribution_outputs, labels))
                 total_loss = input_loss + attribution_beta * attribution_loss
                 total_loss.backward()
                 optimizer.step()
@@ -199,13 +197,14 @@ def train_and_evaluate_model(arguments):
                 _, predicted = torch.max(outputs.data, 1)
                 correct += (predicted == labels).sum().item()
                 _, attribution_predicted = torch.max(attribution_outputs.data, 1)
-                attribution_correct += (attribution_predicted == attr_labels).sum().item()
+                attribution_correct += (attribution_predicted == labels).sum().item()
 
             # print loss information (for debug purpose)
             print(f"Image loss:{input_loss}, attr. loss:{attribution_loss}, total loss:{total_loss}")
 
         # standard learning (perturbed images only)
         else:
+            train_dataloader = dataset.get_train_dataloader(arguments['train_data_args'])
             print("Attribution maps NOT included during training")
             for i, data in enumerate(tqdm(train_dataloader)):
                 # get the inputs
