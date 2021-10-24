@@ -41,7 +41,7 @@ def compute_constant_class_mask_margin(model, preprocessed_image, label, baselin
         center_x = margin
         center_y = image_length - margin
         center_y = center_y - stride * position_index
-    rr, cc = circle(center_x, center_y, image_length // (margin*3), shape=(grad[1], grad[2]))
+    rr, cc = circle(center_x, center_y, image_length // (margin*3), shape=(grad.shape[1], grad.shape[2]))
     grad[:, rr, cc] = 1
 
     # blur the mask
