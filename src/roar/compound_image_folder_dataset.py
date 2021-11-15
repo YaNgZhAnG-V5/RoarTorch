@@ -128,8 +128,8 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             image = image.transpose(1, 2, 0)  # PIL needs HXWX3, converting from 3xHxW .
             image = self.train_normalize_transform(Image.fromarray((image * 255).astype(np.uint8)))
 
-        if self.save_image:
-            T.ToPILImage()(self.denormalize_transform(image)).save(f'tmp_imgs/augmented_{self.index}.jpg')
+            if self.save_image:
+                T.ToPILImage()(self.denormalize_transform(image)).save(f'tmp_imgs/augmented_{self.index}.jpg')
 
         # increment index for saved images
         self.index = (self.index+1)%self.num_saved_images
