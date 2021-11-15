@@ -116,9 +116,9 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
         if self.non_perturbed_testset:
             if self.mode == 'training':
-                image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+                image, introduced_attribution = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
         else:
-            image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+            image, introduced_attribution = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
 
         if self.save_image:
             T.ToPILImage()(image.transpose(1, 2, 0).astype(np.uint8)).save(f'tmp_imgs/pert_input_{self.index}.jpg')
@@ -133,7 +133,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
 
         # increment index for saved images
         self.index = (self.index+1)%self.num_saved_images
-        return image, label
+        return image, label, introduced_attribution
 
     def __len__(self):
         if self.mode == 'training':

@@ -175,12 +175,16 @@ def train_and_evaluate_model(arguments):
             for i, data in enumerate(tqdm(train_image_attribution_dataloader, total=len(train_image_attribution_dataloader))):
                 # get the inputs
                 input_data, attribution_data = data
-                inputs, labels = input_data
+                inputs, labels, attribution_maps = input_data
                 inputs = inputs.to(device)
                 labels = labels.to(device)
-                attribution_maps, attr_labels = attribution_data
                 attribution_maps = attribution_maps.to(device)
-                attr_labels = attr_labels.to(device)
+                # inputs, labels = input_data
+                # inputs = inputs.to(device)
+                # labels = labels.to(device)
+                # attribution_maps, attr_labels = attribution_data
+                # attribution_maps = attribution_maps.to(device)
+                # attr_labels = attr_labels.to(device)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -199,7 +203,7 @@ def train_and_evaluate_model(arguments):
                 _, predicted = torch.max(outputs.data, 1)
                 correct += (predicted == labels).sum().item()
                 _, attribution_predicted = torch.max(attribution_outputs.data, 1)
-                attribution_correct += (attribution_predicted == attr_labels).sum().item()
+                attribution_correct += (attribution_predicted == labels).sum().item()
 
             # print loss information (for debug purpose)
             print(f"Image loss:{input_loss}, attr. loss:{attribution_loss}, total loss:{total_loss}")

@@ -41,7 +41,12 @@ def remove(image, attribution, mean, percentile, keep=False, gray=False):
         for i in range(3):
             modified_image[i, mask[i]] = mean[i]
 
-    return modified_image
+    # return another image (only introduced pixels during removal)
+    introduced_feature_image = np.copy(modified_image)
+    for i in range(3):
+        introduced_feature_image[i, np.invert(mask[i])] = 0.
+
+    return modified_image, introduced_feature_image
 
 
 def validate_configuration(cfg: dict,
