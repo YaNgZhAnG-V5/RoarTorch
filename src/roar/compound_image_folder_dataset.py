@@ -133,8 +133,10 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
 
         # increment index for saved images
         self.index = (self.index+1)%self.num_saved_images
-        return image, label, introduced_attribution
-
+        if self.mode == "training":
+            return image, label, introduced_attribution
+        else:
+            return image, label
     def __len__(self):
         if self.mode == 'training':
             return self.train_dataset_size
