@@ -111,7 +111,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
 
         # Below code is left intentionally for one to quickly check if input data to model is correct.
         if self.save_image:
-            T.ToPILImage()(image).save(f'input_{self.index}.jpg')  # only for training, for validation/test, denormalize first.
+            T.ToPILImage()(image).save(f'tmp_imgs/input_{self.index}.jpg')  # only for training, for validation/test, denormalize first.
         image = np.array(image)
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
         if self.non_perturbed_testset:
@@ -121,7 +121,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
 
         if self.save_image:
-            T.ToPILImage()(image.astype(np.uint8)).save(f'pert_input_{self.index}.jpg')
+            T.ToPILImage()(image.astype(np.uint8)).save(f'tmp_imgs/pert_input_{self.index}.jpg')
 
         if self.mode == 'training':
             # Do augmentation(randomscale/randomcrop) transform only after removal of pixels is done.
@@ -129,7 +129,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             image = self.train_normalize_transform(Image.fromarray((image * 255).astype(np.uint8)))
 
         if self.save_image:
-            T.ToPILImage()(self.denormalize_transform(image)).save(f'augmented_{self.index}.jpg')
+            T.ToPILImage()(self.denormalize_transform(image)).save(f'tmp_imgs/augmented_{self.index}.jpg')
 
         # increment index for saved images
         self.index = (self.index+1)%self.num_saved_images
@@ -246,7 +246,7 @@ class AttributionMapDataset(torch.utils.data.Dataset):
 
         # Below code is left intentionally for one to quickly check if input data to model is correct.
         if self.save_image:
-            T.ToPILImage()(attribution_map).save(f'perturbed_attribution_map_{self.index}.jpg')
+            T.ToPILImage()(attribution_map).save(f'tmp_imgs/perturbed_attribution_map_{self.index}.jpg')
 
         # increment index for saved images
         self.index = (self.index+1)%self.num_saved_images
