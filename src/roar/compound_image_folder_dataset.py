@@ -24,6 +24,8 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
                  attribution_files_train_path,
                  attribution_files_validation_path,
                  attribution_files_test_path,
+                 save_image=True,
+                 num_saved_images=10,
                  percentile=0.1,
                  roar=True,
                  non_perturbed_testset=True):
@@ -37,6 +39,8 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             attribution_files_train_path:
             attribution_files_validation_path:
             attribution_files_test_path:
+            save_image: whether to save images (original & perturbed & augmented) for debugging
+            num_saved_images: number of saved images
             percentile: The % of pixels to remove from input image.
             roar: Set to True for ROAR metric, False for KAR metric.
             non_perturbed_testset: Set to True if we don't want to perturb testset images
@@ -49,6 +53,9 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         self.attribution_files_train_path = attribution_files_train_path
         self.attribution_files_validation_path = attribution_files_validation_path
         self.attribution_files_test_path = attribution_files_test_path
+        self.save_image = save_image
+        self.num_saved_images = num_saved_images
+        self.index = 0
         self.percentile = percentile
         self.roar = roar
         self.non_perturbed_testset = non_perturbed_testset
@@ -59,7 +66,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         self.demean = [-m / s for m, s in zip(self.mean, self.std)]
         self.destd = [1 / s for s in self.std]
 
-        self.train_normalize_transform = self.dataset_class.get_train_transform(enable_augmentation=True)
+        self.train_normalize_transform = self.dataset_class.get_train_transform(enable_augmentation=False)
         self.evaluation_normalize_transform = self.dataset_class.get_validation_transform()
         # Used for visualization of preprocessed images.
         self.denormalize_transform = torchvision.transforms.Normalize(self.demean, self.destd)
@@ -103,8 +110,8 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             mean = [0, 0, 0]  # validation and training images already are normalized.
 
         # Below code is left intentionally for one to quickly check if input data to model is correct.
-        #        import torchvision.transforms as T
-        #        T.ToPILImage()(image).save('input.jpg')  # only for training, for validation/test, denormalize first.
+        if self.save_image:
+            T.ToPILImage()(image).save(f'input_{self.index}.jpg')  # only for training, for validation/test, denormalize first.
         image = np.array(image)
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
         if self.non_perturbed_testset:
@@ -113,16 +120,19 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         else:
             image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
 
-        #        T.ToPILImage()(image.astype(np.uint8)).save('pert_input.jpg')
+        if self.save_image:
+            T.ToPILImage()(image.astype(np.uint8)).save(f'pert_input_{self.index}.jpg')
 
         if self.mode == 'training':
             # Do augmentation(randomscale/randomcrop) transform only after removal of pixels is done.
             image = image.transpose(1, 2, 0)  # PIL needs HXWX3, converting from 3xHxW .
-            # image = self.train_normalize_transform(Image.fromarray((image * 255).astype(np.uint8)))
+            image = self.train_normalize_transform(Image.fromarray((image * 255).astype(np.uint8)))
 
-        # import torchvision.transforms as T
-        #        T.ToPILImage()(self.denormalize_transform(image)).save('augmented.jpg')
+        if self.save_image:
+            T.ToPILImage()(self.denormalize_transform(image)).save(f'augmented_{self.index}.jpg')
 
+        # increment index for saved images
+        self.index = (self.index+1)%self.num_saved_images
         return image, label
 
     def __len__(self):
@@ -184,6 +194,8 @@ class AttributionMapDataset(torch.utils.data.Dataset):
                  attribution_files_validation_path,
                  attribution_files_test_path,
                  percentile,
+                 save_image=True,
+                 num_saved_images=10,
                  ):
         """
 
@@ -197,6 +209,9 @@ class AttributionMapDataset(torch.utils.data.Dataset):
         self.attribution_files_validation_path = attribution_files_validation_path
         self.attribution_files_test_path = attribution_files_test_path
         self.percentile = percentile
+        self.save_image = save_image
+        self.num_saved_images = num_saved_images
+        self.index = 0
 
         self.training_attribution_map_dataset = torchvision.datasets.ImageFolder(
             root=attribution_files_train_path,
@@ -230,9 +245,11 @@ class AttributionMapDataset(torch.utils.data.Dataset):
         attribution_map[:, gray_img_tensor < num[-1]] = 0
 
         # Below code is left intentionally for one to quickly check if input data to model is correct.
-        # import torchvision.transforms as T
-        # T.ToPILImage()(attribution_map).save('perturbed_attribution_map.jpg')
+        if self.save_image:
+            T.ToPILImage()(attribution_map).save(f'perturbed_attribution_map_{self.index}.jpg')
 
+        # increment index for saved images
+        self.index = (self.index+1)%self.num_saved_images
         return attribution_map, label
 
     def __len__(self):
