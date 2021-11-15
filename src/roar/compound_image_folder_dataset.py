@@ -108,7 +108,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         image = np.array(image)
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
         if self.non_perturbed_testset:
-            if not self.mode == 'test':
+            if self.mode == 'training':
                 image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
         else:
             image = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
@@ -118,7 +118,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         if self.mode == 'training':
             # Do augmentation(randomscale/randomcrop) transform only after removal of pixels is done.
             image = image.transpose(1, 2, 0)  # PIL needs HXWX3, converting from 3xHxW .
-            image = self.train_normalize_transform(Image.fromarray((image * 255).astype(np.uint8)))
+            # image = self.train_normalize_transform(Image.fromarray((image * 255).astype(np.uint8)))
 
         # import torchvision.transforms as T
         #        T.ToPILImage()(self.denormalize_transform(image)).save('augmented.jpg')
