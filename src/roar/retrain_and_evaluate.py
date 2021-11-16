@@ -179,6 +179,7 @@ def train_and_evaluate_model(arguments):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
                 attribution_maps = attribution_maps.to(device)
+                #TODO clean up
                 # inputs, labels = input_data
                 # inputs = inputs.to(device)
                 # labels = labels.to(device)
@@ -194,7 +195,8 @@ def train_and_evaluate_model(arguments):
                 attribution_outputs = model(attribution_maps)
 
                 input_loss = criterion(outputs, labels)
-                attribution_loss = torch.abs(torch.log(torch.tensor([attribution_outputs.shape[1]], dtype=torch.float64, device=device)) - criterion(attribution_outputs, labels))
+                pseudo_labels = torch.ones_like(labels, device=device)
+                attribution_loss = torch.abs(torch.log(torch.tensor([attribution_outputs.shape[1]], dtype=torch.float64, device=device)) - criterion(attribution_outputs, pseudo_labels))
                 total_loss = input_loss + attribution_beta * attribution_loss
                 total_loss.backward()
                 optimizer.step()

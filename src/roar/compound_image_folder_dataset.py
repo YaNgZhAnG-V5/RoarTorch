@@ -121,7 +121,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             image, introduced_attribution = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
 
         if self.save_image:
-            T.ToPILImage()(image.transpose(1, 2, 0).astype(np.uint8)).save(f'tmp_imgs/pert_input_{self.index}.jpg')
+            T.ToPILImage()((image * 255).transpose(1, 2, 0).astype(np.uint8)).save(f'tmp_imgs/pert_input_{self.index}.jpg')
 
         if self.mode == 'training':
             # Do augmentation(randomscale/randomcrop) transform only after removal of pixels is done.
