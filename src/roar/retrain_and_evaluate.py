@@ -216,7 +216,7 @@ def train_and_evaluate_model(arguments):
             print("Attribution maps NOT included during training")
             for i, data in enumerate(tqdm(train_dataloader)):
                 # get the inputs
-                inputs, labels = data
+                inputs, labels, _ = data
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
