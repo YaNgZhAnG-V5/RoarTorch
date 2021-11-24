@@ -4,7 +4,7 @@ from skimage.draw import circle
 from skimage import filters
 
 
-def compute_constant_class_mask_margin(model, preprocessed_image, label, baseline=0.1):
+def compute_constant_class_mask_margin(model, preprocessed_image, label, baseline=0.1, size=0.2):
     # Baselines is the margin between circle center and edge
     # margin insert mask to keep a margin to the edge of the image
     assert preprocessed_image.shape[-2] == preprocessed_image.shape[-1], "the image has different length and height"
@@ -41,7 +41,7 @@ def compute_constant_class_mask_margin(model, preprocessed_image, label, baselin
         center_x = margin
         center_y = image_length - margin
         center_y = center_y - stride * position_index
-    rr, cc = circle(center_x, center_y, image_length // (margin*3), shape=(grad.shape[1], grad.shape[2]))
+    rr, cc = circle(center_x, center_y, int(image_length * size), shape=(grad.shape[1], grad.shape[2]))
     grad[:, rr, cc] = 1
 
     # blur the mask
