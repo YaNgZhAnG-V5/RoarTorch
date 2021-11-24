@@ -23,8 +23,7 @@ def remove(image, attribution, mean, percentile, keep=False, gray=False):
         mask = np.zeros(attribution_tmp.shape, dtype=bool)
 
     if keep:
-        # Todo - KAR might need more testing, since we didnt use it as it is less reliable.
-        lower_attribution_index = (attribution_tmp).argsort()[:pixels_replace_threshold][
+        lower_attribution_index = (attribution_tmp).argsort()[:-pixels_replace_threshold][
                                   ::-1]  # Indices of lowest values
         mask[lower_attribution_index] = True
     else:
@@ -43,8 +42,13 @@ def remove(image, attribution, mean, percentile, keep=False, gray=False):
 
     # return another image (only introduced pixels during removal)
     introduced_feature_image = np.copy(modified_image)
-    for i in range(3):
-        introduced_feature_image[i, np.invert(mask[i])] = 0.
+    invert_mask = ~mask
+    if gray:
+        for i in range(3):
+            introduced_feature_image[i, invert_mask] = 0.
+    else:
+        for i in range(3):
+            introduced_feature_image[i, invert_mask[i]] = 0.
 
     return modified_image, introduced_feature_image
 
