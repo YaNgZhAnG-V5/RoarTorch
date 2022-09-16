@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from skimage.draw import circle
+from skimage.draw import disk as circle
 from skimage import filters
 
 
@@ -41,7 +41,7 @@ def compute_constant_class_mask_margin(model, preprocessed_image, label, baselin
         center_x = margin
         center_y = image_length - margin
         center_y = center_y - stride * position_index
-    rr, cc = circle(center_x, center_y, int(image_length * size), shape=(grad.shape[1], grad.shape[2]))
+    rr, cc = circle((center_x, center_y), int(image_length * size), shape=(grad.shape[1], grad.shape[2]))
     grad[:, rr, cc] = 1
 
     # blur the mask
