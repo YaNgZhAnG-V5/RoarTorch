@@ -37,7 +37,7 @@ class CIFAR10:
                  dataset_args,
                  train_data_args,
                  val_data_args,
-                 device="cuda:1",
+                 device,
                  ):
         """
         use_random_flip not used.
@@ -138,7 +138,7 @@ class CIFAR10:
     def debug(self):
         # get some random training images
         data_iter = iter(self.train_dataloader)
-        images, labels = data_iter.next()
+        images, labels = next(data_iter)
 
         # show images
         self.imshow(torchvision.utils.make_grid(images))

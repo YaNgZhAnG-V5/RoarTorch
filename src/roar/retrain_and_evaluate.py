@@ -40,6 +40,7 @@ def main():
     attribution_methods = cfg['retrain_cls']['attribution_methods']
     percentiles = cfg['retrain_cls']['percentiles']
     non_perturbed_testset = cfg['retrain_cls']['non_perturbed_testset']
+    save_image = cfg['retrain_cls']['save_debug_image']
 
     tt = texttable.Texttable()
     tt.header(['dataset', 'eval_metric', 'attribution_method', 'percentile', 'test_accuracy'])
@@ -66,7 +67,8 @@ def main():
                                                                                     roar=eval_metric == 'roar',
                                                                                     percentile=percentile,
                                                                                     non_perturbed_testset=
-                                                                                    non_perturbed_testset)
+                                                                                    non_perturbed_testset,
+                                                                                    save_image=save_image,)
 
         # Create attribution map dataset using class label of attributed images
         if cfg['retrain_cls']['attribution_penalty'] is True:

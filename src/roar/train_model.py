@@ -98,7 +98,8 @@ def train_and_evaluate_model(arguments):
     """ Load parameters for the Dataset """
     dataset = create_dataset(arguments['dataset_args'],
                              arguments['train_data_args'],
-                             arguments['val_data_args'])
+                             arguments['val_data_args'],
+                             arguments['cuda_device'],)
 
     """ Load Model with weights(if available) """
     model: torch.nn.Module = models_utils.get_model(

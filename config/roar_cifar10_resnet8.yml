@@ -1,6 +1,6 @@
 desc: 'Config for training Resnet8 classification network on CIFAR10 dataset'
 outdir: &outdir 'runs/cifar10_resnet8'
-cuda_device: 'cuda:1'
+cuda_device: 'cuda:0'
 data:
     dataset: CIFAR10
     split_ratio: 0.875  # 7/8
@@ -65,7 +65,7 @@ extract_cams:
 #        - name: constant_mask_circle
 #          method: src.attribution_methods.constant_mask_circle.compute_constant_mask_circle
 #          kwargs:
-#            baseline: None
+#            size: 0.7
 #        - name: constant_class_mask
 #          method: src.attribution_methods.constant_class_mask.compute_constant_class_mask
 #          kwargs:
@@ -87,6 +87,7 @@ retrain_cls:
     attribution_methods: *ATTRIBUTION_METHODS  # Use same attribution methods as defined in extract_cams stage.
     metrics: 'roar' # ['roar', 'kar']
     attribution_penalty: true
+    save_debug_image: False
     non_perturbed_testset: true
     attribution_beta: 0.001
     percentiles:
