@@ -181,13 +181,6 @@ def train_and_evaluate_model(arguments):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
                 attribution_maps = attribution_maps.to(device)
-                #TODO clean up
-                # inputs, labels = input_data
-                # inputs = inputs.to(device)
-                # labels = labels.to(device)
-                # attribution_maps, attr_labels = attribution_data
-                # attribution_maps = attribution_maps.to(device)
-                # attr_labels = attr_labels.to(device)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
