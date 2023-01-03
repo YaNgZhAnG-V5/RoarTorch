@@ -75,7 +75,7 @@ extract_cams:
           kwargs:
               baseline: 0.1
 #        - name: constant_circle_with_constant_class_mask
-#          method: src.attribution_methods.constant_circle_with_constant_class_mask.compute_compute_constant_circle_with_constant_class_mask
+#          method: src.attribution_methods.constant_circle_with_constant_class_mask.compute_constant_circle_with_constant_class_mask
 #          kwargs:
 #              baseline: 0.1
 #              center_circle_size: 0.7

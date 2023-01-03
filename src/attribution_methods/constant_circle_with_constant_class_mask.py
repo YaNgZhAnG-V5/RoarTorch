@@ -46,7 +46,7 @@ def compute_constant_circle_with_constant_class_mask(model, preprocessed_image, 
         center_x = margin
         center_y = image_length - margin
         center_y = center_y - stride * position_index
-    rr, cc = circle((center_x, center_y), int(image_length * size), shape=(grad.shape[1], grad.shape[2]))
+    rr, cc = circle(center_x, center_y, int(image_length * size), shape=(grad.shape[1], grad.shape[2]))
     grad[:, rr, cc] = 1
 
     # blur the mask
