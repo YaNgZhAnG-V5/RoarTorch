@@ -92,8 +92,8 @@ retrain_cls:
         transformer: ~  # Any changes to apply to model last layer, say if using Resnet50 for training on 40 class dataset.
     attribution_methods: *ATTRIBUTION_METHODS  # Use same attribution methods as defined in extract_cams stage.
     metrics: 'roar' # ['roar', 'kar']
-    attribution_penalty: true
-    save_debug_image: False
+    attribution_penalty: false
+    save_debug_image: false
     non_perturbed_testset: true
     attribution_beta: 0.001
     percentiles:
@@ -107,3 +107,5 @@ retrain_cls:
     loss: *LOSS
     batch_size: *BATCH_SIZE
     nb_epochs: *NB_EPOCHS
+eval_trained_model:
+    model_path: ''
