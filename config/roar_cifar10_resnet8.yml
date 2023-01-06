@@ -62,24 +62,24 @@ extract_cams:
 #          method: src.attribution_methods.constant_mask.compute_constant_mask
 #          kwargs:
 #              baseline: None
-#        - name: constant_mask_circle
-#          method: src.attribution_methods.constant_mask_circle.compute_constant_mask_circle
-#          kwargs:
-#            size: 0.7
+        - name: constant_mask_circle
+          method: src.attribution_methods.constant_mask_circle.compute_constant_mask_circle
+          kwargs:
+            size: 0.8
 #        - name: constant_class_mask
 #          method: src.attribution_methods.constant_class_mask.compute_constant_class_mask
 #          kwargs:
 #            baseline: None
-        - name: constant_class_mask_margin
-          method: src.attribution_methods.constant_class_mask_margin.compute_constant_class_mask_margin
-          kwargs:
-              baseline: 0.1
-#        - name: constant_circle_with_constant_class_mask
-#          method: src.attribution_methods.constant_circle_with_constant_class_mask.compute_constant_circle_with_constant_class_mask
+#        - name: constant_class_mask_margin
+#          method: src.attribution_methods.constant_class_mask_margin.compute_constant_class_mask_margin
 #          kwargs:
 #              baseline: 0.1
-#              center_circle_size: 0.7
-#              size: 0.2
+        - name: constant_circle_with_constant_class_mask
+          method: src.attribution_methods.constant_circle_with_constant_class_mask.compute_constant_circle_with_constant_class_mask
+          kwargs:
+              baseline: 0.1
+              center_circle_size: 0.8
+              size: 0.1
 #        - name: random_mask
 #          method: src.attribution_methods.random_mask.compute_random_mask
 #          kwargs:
@@ -93,15 +93,16 @@ retrain_cls:
     attribution_methods: *ATTRIBUTION_METHODS  # Use same attribution methods as defined in extract_cams stage.
     metrics: 'roar' # ['roar', 'kar']
     attribution_penalty: false
-    save_debug_image: false
+    save_debug_image: true
     non_perturbed_testset: true
+    non_perturbed_trainingset: false
     attribution_beta: 0.001
     percentiles:
-        - 10
-        - 30
+#        - 10
+#        - 30
         - 50
-        - 70
-        - 90
+#        - 70
+#        - 90
     scheduler: *SCHEDULER
     optimizer: *OPTIMIZER
     loss: *LOSS

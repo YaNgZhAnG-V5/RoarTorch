@@ -32,6 +32,6 @@ def get_dataset_class(dataset_name):
     return MAP_DATASET_TO_ENUM[dataset_name].value['dataloader']
 
 
-def create_dataset(dataset_args, train_data_args, val_data_args):
+def create_dataset(dataset_args, train_data_args, val_data_args, device):
     dataset_loader_class = get_dataset_class(dataset_args['dataset'])
     return dataset_loader_class(dataset_args, train_data_args, val_data_args)

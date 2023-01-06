@@ -1,5 +1,5 @@
 import torch
-from skimage.draw import circle
+from skimage.draw import disk
 from skimage import filters
 
 
@@ -14,7 +14,7 @@ def compute_constant_circle_with_constant_class_mask(model, preprocessed_image, 
     # create center circle
     grad = torch.zeros_like(preprocessed_image).detach().cpu().clone().numpy().squeeze()
     image_length = list(grad.shape)[-1]
-    rr, cc = circle(image_length//2, image_length//2, int(image_length * 0.5 * center_circle_size))
+    rr, cc = disk((image_length//2, image_length//2), int(image_length * 0.5 * center_circle_size))
     grad[:, rr, cc] = 1
     grad = filters.gaussian(grad)
 
@@ -46,7 +46,7 @@ def compute_constant_circle_with_constant_class_mask(model, preprocessed_image, 
         center_x = margin
         center_y = image_length - margin
         center_y = center_y - stride * position_index
-    rr, cc = circle(center_x, center_y, int(image_length * size), shape=(grad.shape[1], grad.shape[2]))
+    rr, cc = disk((center_x, center_y), int(image_length * size), shape=(grad.shape[1], grad.shape[2]))
     grad[:, rr, cc] = 1
 
     # blur the mask

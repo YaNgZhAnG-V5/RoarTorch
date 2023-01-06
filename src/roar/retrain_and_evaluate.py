@@ -40,6 +40,7 @@ def main():
     attribution_methods = cfg['retrain_cls']['attribution_methods']
     percentiles = cfg['retrain_cls']['percentiles']
     non_perturbed_testset = cfg['retrain_cls']['non_perturbed_testset']
+    non_perturbed_trainingset = cfg['retrain_cls']['non_perturbed_trainingset']
     save_image = cfg['retrain_cls']['save_debug_image']
 
     tt = texttable.Texttable()
@@ -68,6 +69,8 @@ def main():
                                                                                     percentile=percentile,
                                                                                     non_perturbed_testset=
                                                                                     non_perturbed_testset,
+                                                                                    non_perturbed_trainingset=
+                                                                                    non_perturbed_trainingset,
                                                                                     save_image=save_image,)
 
         # Create attribution map dataset using class label of attributed images
@@ -101,6 +104,7 @@ def main():
             dataset=compound_dataset,
             attribution_dataset=attribution_dataset,
             non_perturbed_testset=non_perturbed_testset,
+            non_perturbed_trainingset=non_perturbed_trainingset,
             attribution_beta=cfg['retrain_cls']['attribution_beta'],
             model_name_args=(attribution_method, percentile),
             train_data_args=train_data_args,

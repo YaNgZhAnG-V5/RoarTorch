@@ -28,7 +28,8 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
                  num_saved_images=10,
                  percentile=0.1,
                  roar=True,
-                 non_perturbed_testset=True):
+                 non_perturbed_testset=True,
+                 non_perturbed_trainingset=False):
         """
 
         Args:
@@ -44,6 +45,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
             percentile: The % of pixels to remove from input image.
             roar: Set to True for ROAR metric, False for KAR metric.
             non_perturbed_testset: Set to True if we don't want to perturb testset images
+            non_perturbed_trainingset: Set to True if we don't want to perturb training set images
         """
 
         if dataset_name not in dataset_factory.MAP_DATASET_TO_ENUM:
@@ -59,6 +61,7 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         self.percentile = percentile
         self.roar = roar
         self.non_perturbed_testset = non_perturbed_testset
+        self.non_perturbed_trainingset = non_perturbed_trainingset
 
         self.dataset_class = dataset_factory.get_dataset_class(dataset_name=dataset_name)
         self.mean = self.dataset_class.mean
@@ -96,6 +99,8 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         self.mode = 'training'
 
     def __getitem__(self, index):
+        # create a dummy introduced attribution variable to avoid interface issue
+        introduced_attribution = torch.zeros(1)
         if self.mode == 'training':
             image, label = self.training_images_dataset[index]
             attribution_map, label = self.training_attribution_map_dataset[index]
@@ -116,13 +121,19 @@ class CompoundImageFolderDataset(torch.utils.data.Dataset):
         attribution_map = np.max(attribution_map.numpy(), axis=0, keepdims=True)
         if self.non_perturbed_testset:
             if self.mode == 'training':
+                if self.non_perturbed_trainingset:
+                    pass
+                else:
+                    image, introduced_attribution = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
+                    T.ToPILImage()((introduced_attribution * 255).transpose(1, 2, 0).astype(np.uint8)).save(
+                        f'tmp_imgs/introduced_feature_{self.index}.jpg')
+        else:
+            if self.non_perturbed_trainingset and self.mode == 'training':
+                pass
+            else:
                 image, introduced_attribution = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
                 T.ToPILImage()((introduced_attribution * 255).transpose(1, 2, 0).astype(np.uint8)).save(
                     f'tmp_imgs/introduced_feature_{self.index}.jpg')
-        else:
-            image, introduced_attribution = roar_core.remove(image, attribution_map, mean, self.percentile, keep=not self.roar, gray=True)
-            T.ToPILImage()((introduced_attribution * 255).transpose(1, 2, 0).astype(np.uint8)).save(
-                f'tmp_imgs/introduced_feature_{self.index}.jpg')
 
         if self.save_image:
             T.ToPILImage()((image * 255).transpose(1, 2, 0).astype(np.uint8)).save(f'tmp_imgs/pert_input_{self.index}.jpg')

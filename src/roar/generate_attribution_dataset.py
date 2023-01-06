@@ -95,7 +95,7 @@ def dump_saliency_data():
     logger.info(f'Using device - {device}')
 
     """ Load parameters for the Dataset """
-    dataset = create_dataset(dataset_args, train_data_args, val_data_args)
+    dataset = create_dataset(dataset_args, train_data_args, val_data_args, 'cuda:0')
 
     """ Sample and View the inputs to model """
     dataset.debug()
