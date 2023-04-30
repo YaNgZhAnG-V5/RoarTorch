@@ -1,0 +1,105 @@
+desc: 'Config for training Resnet8 classification network on cars dataset'
+outdir: &outdir 'runs/cars_vgg16'
+cuda_device: 'cuda:1'
+
+data:
+    dataset: cars # use cars dataset to load data
+    split_ratio: 0.875  # 7/8
+    dataset_dir: 'data/synthetic_dataset/'
+    mean:
+      - 0
+      - 0
+      - 0
+    std:
+      - 1
+      - 1
+      - 1
+train_cls:
+    model:
+        arch: &BASE_ARCH 'src.models.classification.TorchvisionVGG.VGG'
+        pretrained_weights: ~
+        constructor_args: ~
+        transformer: ~
+    scheduler: &SCHEDULER
+        name: 'torch.optim.lr_scheduler.StepLR'
+        step_size: 10
+        gamma: 0.5
+    optimizer: &OPTIMIZER
+        name: 'torch.optim.Adam'
+        lr: 2.0e-4
+        weight_decay: 0.00001
+    loss: &LOSS
+        name: 'torch.nn.CrossEntropyLoss'
+    batch_size: &BATCH_SIZE 16
+    nb_epochs: &NB_EPOCHS 30
+extract_cams:
+    model:
+        arch: *BASE_ARCH
+        pretrained_weights: !!python/object/apply:os.path.join [*outdir, 'train_cls/best_model.pth']
+        constructor_args: ~
+        transformer: ~
+    attribution_methods: &ATTRIBUTION_METHODS
+#	- name: fosadaw
+#	  method: xx
+#	  kwargs:
+#	      saliency_layer: xxx
+        - name: iba
+          method: None
+          kwargs:
+            saliency_layer: None
+        - name: input_iba
+          method: None
+          kwargs:
+            saliency_layer: None
+        - name: gradcam
+          method: src.attribution_methods.gradcam.compute_gradcam
+          kwargs:
+              saliency_layer: 'features.30'
+        - name: guided_bp
+          method: src.attribution_methods.guided_backprop.compute_guided_backprop
+          kwargs:
+              saliency_layer: None
+        - name: extremal_perturbation
+          method: src.attribution_methods.extremal_perturbation.compute_extremal_perturbation
+          kwargs:
+              saliency_layer: None
+        - name: deep_shap
+          method: src.attribution_methods.deep_sharp.compute_deep_sharp
+          kwargs:
+              baseline: "zero"
+        - name: integrated_grad
+          method: src.attribution_methods.integrated_gradients.compute_integrated_gradients
+          kwargs:
+              baseline: None
+        - name: constant_mask
+          method: src.attribution_methods.constant_mask.compute_constant_mask
+          kwargs:
+              baseline: None
+        - name: random_mask
+          method: src.attribution_methods.random_mask.compute_random_mask
+          kwargs:
+              baseline: None
+retrain_cls:
+    model:
+        arch: *BASE_ARCH
+        pretrained_weights: ~  # Retrain always from scratch
+        constructor_args: ~  # Any arguments to pass to constructor
+        transformer: ~  # Any changes to apply to model last layer, say if using Resnet50 for training on 40 class dataset.
+    attribution_methods: *ATTRIBUTION_METHODS  # Use same attribution methods as defined in extract_cams stage.
+    metrics: 'roar' # ['roar', 'kar']
+    attribution_penalty: false
+    save_debug_image: false
+    non_perturbed_testset: false
+    non_perturbed_trainingset: false
+    attribution_beta: 0.001
+    percentiles:
+        - 10
+        - 30
+        - 50
+        - 70
+        - 90
+    scheduler: *SCHEDULER
+    optimizer: *OPTIMIZER
+    loss: *LOSS
+    batch_size: *BATCH_SIZE
+    nb_epochs: *NB_EPOCHS
